@@ -4,11 +4,13 @@
 
 [How to create plutus minting policy script](https://reddspark.blog/2021/08/02/simply-plutus-minting-policies/)
 
+[Minting script example](https://github.com/input-output-hk/Alonzo-testnet/blob/main/resources/plutus-sources/plutus-example/src/Cardano/PlutusExample/MintingScriptPurple.hs)
+
 #### Solution
 
 In minting policy we can validate the `TxInfoMint` the Value minting by this transaction. We can get it from the `Script context`'s `TxInfo` data and check if the number from redeemer equals the number in `txInfoMint`.
 
-Go to the `plutus-scripts` directory and run `plutus-minting-purple-example` using this [instruction](../build-plutus-script).
+Go to the `plutus-scripts` directory and run `plutus-minting-purple-example` using this [instruction](https://github.com/olgaklimenko/Alonzo-testnet-solutions/blob/main/build-plutus-script.md).
 Copy the resulting `minting-policy-purple.plutus` to data volume, and make a script address:
 
 Export a minting policy id:
@@ -36,7 +38,6 @@ cardano-cli transaction sign \
          --out-file make-collateral.signed
 
 cardano-cli transaction submit --tx-file  make-collateral.signed --testnet-magic 8
-
 ```
 
 Now all is ready for minting:
@@ -53,13 +54,13 @@ cardano-cli transaction build \
 --mint-script-file minting-policy-purple.plutus \
 --tx-in-collateral 18052dceb8d9d0da37191b5e9d0fba8705f16231f6b9400088f0a7aaffa49307#0 \
 --protocol-params-file protocol.json \
---out-file check-number.raw
+--out-file check-amount.raw
 
 cardano-cli transaction sign \
          --signing-key-file /data/keys/percy.skey \
          --testnet-magic 8 \
-         --tx-body-file check-number.raw \
-         --out-file check-number.signed
+         --tx-body-file check-amount.raw \
+         --out-file check-amount.signed
 
-cardano-cli transaction submit --tx-file  check-number.signed --testnet-magic 8
+cardano-cli transaction submit --tx-file  check-amount.signed --testnet-magic 8
 ```
