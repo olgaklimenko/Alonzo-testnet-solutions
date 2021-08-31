@@ -273,53 +273,48 @@ export CHECK_NUMBER_ADDR=$(cat check_number.addr)
 
 export minting policy id (currency symbol):
 ```
-export CHECK_NUMBER_POLICY=30365daa7b21d46f4930876ee0eba865650533e7cb92ad662f7d68f4b44086f9
+cardano-cli transaction policyid --script-file minting-policy-purple.plutus > minting-policy-purple.id
+# export CHECK_NUMBER_POLICY=30365daa7b21d46f4930876ee0eba865650533e7cb92ad662f7d68f4b44086f9
+export CHECK_NUMBER_POLICY_ID=$(cat minting-policy-purple.id)
 ```
 
 Make a collateral utxo for percy:
 
 ```
 cardano-cli transaction build-raw \
---tx-in 0f3a00cb06b7f883a85d8f0b9b4cd37c88075d76ba32e7ed6de3429d2620c2f2#1 \
---tx-out $PERCY_ADDR+10000000000 \
---tx-out $ADDRESS+929999467153 \
+--tx-in 937529af1cc6064de69019af82b2d4ba35052b712f88d84d55c5bf7f6174b778#1 \
+--tx-out $PERCY_ADDR+100000000000 \
+--tx-out $PERCY_ADDR+889999646910 \
 --fee 176545 \
 --out-file make-collateral.raw
+
+cardano-cli transaction sign \
+         --signing-key-file /data/keys/percy.skey \
+         --testnet-magic 8 \
+         --tx-body-file make-collateral.raw \
+         --out-file make-collateral.signed
+
+cardano-cli transaction submit --tx-file  make-collateral.signed --testnet-magic 8
+
 ```
 
-**WARNING** next things are not completed, and aren't working now
-
-<!-- ```
-cardano-cli transaction build-raw \
---alonzo-era \
---tx-in 6f1aea867857746d412ea7010ba427d5ba05a496194ca8fb27186ecbbe731f96#0 \
---tx-out $PERCY_ADDR+0 \
---fee 1001000000 \
---mint="25000000 $CHECK_NUMBER_POLICY.SkyLark" \
---mint-redeemer-value '{"mpTokenName":"SkyLark","mpAmount":25000000}' \
---mint-execution-units "(20422000, 100000)" \
---mint-script-file minting-policy-purple.plutus \
---tx-in-collateral e5d0c6d1aad24bd26bac9752a9f4cd22d68b75b7bd078601bd99d3abf49c48cf#0 \
---protocol-params-file protocol.json \
---out-file check-number.raw
-
-``` -->
+To simplify the calculations, let's use `build` at the first time:
+(here are other utxo hashes than in previous cli commands, because I continued that exercise after the testnet reset.)
 
 ```
 cardano-cli transaction build \
 --alonzo-era \
 --testnet-magic 8 \
---tx-in 6f1aea867857746d412ea7010ba427d5ba05a496194ca8fb27186ecbbe731f96#0 \
+--tx-in 18052dceb8d9d0da37191b5e9d0fba8705f16231f6b9400088f0a7aaffa49307#1 \
+--tx-out $PERCY_ADDR+10000000+"150 $CHECK_NUMBER_POLICY_ID.SkyLark" \
 --change-address $PERCY_ADDR \
---mint="25000000 $CHECK_NUMBER_POLICY.SkyLark" \
---mint-redeemer-value '{"mpTokenName":"SkyLark","mpAmount":25000000}' \
+--mint="150 $CHECK_NUMBER_POLICY_ID.SkyLark" \
+--mint-redeemer-value 150 \
 --mint-script-file minting-policy-purple.plutus \
---tx-in-collateral e5d0c6d1aad24bd26bac9752a9f4cd22d68b75b7bd078601bd99d3abf49c48cf#0 \
+--tx-in-collateral 18052dceb8d9d0da37191b5e9d0fba8705f16231f6b9400088f0a7aaffa49307#0 \
 --protocol-params-file protocol.json \
 --out-file check-number.raw
 
-
-```
 cardano-cli transaction sign \
          --signing-key-file /data/keys/percy.skey \
          --testnet-magic 8 \
@@ -329,4 +324,3 @@ cardano-cli transaction sign \
 cardano-cli transaction submit --tx-file  check-number.signed --testnet-magic 8
 
 ```
-

@@ -7,7 +7,7 @@ import qualified Cardano.Ledger.Alonzo.Data as Alonzo
 import qualified Plutus.V1.Ledger.Api as Plutus
 
 import           Cardano.PlutusExample.MintingScriptPurple (apiExamplePlutusMintingScriptPurple,
-                   mintingScriptPurpleShortBs, curSymbol)
+                   mintingScriptPurpleShortBs)
 
 main :: IO ()
 main = do
@@ -20,7 +20,6 @@ main = do
                   Left evalErr -> print ("Eval Error" :: String) >> print evalErr
                   Right exbudget -> print ("Ex Budget" :: String) >> print exbudget
         Nothing -> error "defaultCostModelParams failed"
-  print $ ("Currency symbol: " :: String) <>  (show curSymbol)
   result <- writeFileTextEnvelope "minting-policy-purple.plutus" Nothing apiExamplePlutusMintingScriptPurple
   case result of
     Left err -> print $ displayError err

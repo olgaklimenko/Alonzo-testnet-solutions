@@ -6,7 +6,7 @@ Get a config name for alonzo-purple here: https://hydra.iohk.io/build/7189190/do
 
 ```
 ALONZO_CONFIG=alonzo-purple
-ALONZO_IMAGE_TAG=alonzo-purple-1.0.1
+ALONZO_IMAGE_TAG=1.29.0-rc2
 
 docker run --rm -it \
     -e NETWORK=$ALONZO_CONFIG \

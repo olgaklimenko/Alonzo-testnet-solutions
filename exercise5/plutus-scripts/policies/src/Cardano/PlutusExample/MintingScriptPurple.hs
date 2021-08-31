@@ -16,7 +16,6 @@
 module Cardano.PlutusExample.MintingScriptPurple
   ( apiExamplePlutusMintingScriptPurple
   , mintingScriptPurpleShortBs
-  , curSymbol
   ) where
 
 import           Prelude                (IO, Semigroup (..), Show (..), String)
@@ -36,45 +35,32 @@ import           PlutusTx.Prelude hiding (Semigroup (..), unless)
 
 {- HLINT ignore "Avoid lambda" -}
 
-data MintParams = MintParams
-    { mpTokenName :: !TokenName
-    , mpAmount    :: !Integer
-    }
-
-PlutusTx.makeLift ''MintParams
-
 {-# INLINABLE mkPolicy #-}
-mkPolicy :: MintParams -> BuiltinData -> ScriptContext -> Bool
-mkPolicy mp _ ctx = traceIfFalse "wrong amount minted" checkMintedAmount
+mkPolicy :: Integer -> BuiltinData -> ScriptContext -> Bool
+mkPolicy amount _ ctx = traceIfFalse "wrong amount minted" checkMintedAmount
 
   where
     info :: TxInfo
     info = scriptContextTxInfo ctx
 
     checkMintedAmount :: Bool
-    checkMintedAmount = case flattenValue (txInfoForge info) of
-      [(cs, tn, amt)] -> cs  == ownCurrencySymbol ctx && tn == (mpTokenName mp) && amt == (mpAmount mp)
+    checkMintedAmount = case flattenValue (txInfoMint info) of
+      [(cs, tn, amt)] -> cs  == ownCurrencySymbol ctx && tokenNameIsValid tn && amt == amount
       _                -> False
 
-policy :: MintParams -> Scripts.MintingPolicy
-policy mp = mkMintingPolicyScript $
+    tokenNameIsValid :: TokenName -> Bool
+    tokenNameIsValid tn = tn == TokenName "SkyLark" || tn == TokenName "Ozymandian"
+
+policy :: Integer -> Scripts.MintingPolicy
+policy amount = mkMintingPolicyScript $
     $$(PlutusTx.compile [|| Scripts.wrapMintingPolicy . mkPolicy ||])
     `PlutusTx.applyCode`
-     PlutusTx.liftCode mp
-
-curSymbol :: CurrencySymbol
-curSymbol = 
-  scriptCurrencySymbol $ policy mp
-    where mp = MintParams { mpTokenName = "SkyLark",
-                            mpAmount    = 25000000
-                          }
+     PlutusTx.liftCode amount
 
 plutusScript :: Script
 plutusScript =
-  unMintingPolicyScript (policy mp)
-    where mp = MintParams { mpTokenName = "SkyLark",
-                            mpAmount    = 25000000
-                          }
+  unMintingPolicyScript (policy amount)
+    where amount = 150
 
 validator :: Validator
 validator = Validator $ plutusScript
