@@ -46,6 +46,7 @@ library
   hs-source-dirs:       src
 
   exposed-modules:      Cardano.PlutusExample.MintingScriptPurple
+                      , Cardano.PlutusExample.MintingNFTScript
 
   build-depends:        text
                       , bytestring
@@ -75,3 +76,20 @@ executable plutus-minting-purple-example
                       , plutus-tx
                       , text
                       , bytestring
+
+executable nft-minting-policy
+  import:               base, project-config
+  hs-source-dirs:       app
+  main-is:              plutus-nft-minting-example.hs
+  ghc-options:          -threaded -rtsopts "-with-rtsopts=-T"
+
+  build-depends:        aeson
+                      , cardano-api
+                      , cardano-ledger-alonzo
+                      , plutus-ledger
+                      , plutus-example
+                      , plutus-ledger-api
+                      , plutus-tx
+                      , text
+                      , bytestring
+
