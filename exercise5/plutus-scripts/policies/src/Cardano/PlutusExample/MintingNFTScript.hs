@@ -29,19 +29,26 @@ import qualified Data.ByteString.Short  as SBS
 import           Cardano.Api.Shelley (PlutusScript (..), PlutusScriptV1)
 
 data NFTMintingParameters = NFTMintingParameters {
-    utxoRef :: TxOutRef,
-    tokenName :: TokenName
+    tokenName :: TokenName,
+    utxoId :: TxId,
+    utxoIndex :: Integer
 }
 
 PlutusTx.makeLift ''NFTMintingParameters
 
 {-# INLINABLE mkPolicy #-}
-mkPolicy :: NFTMintingParameters -> () -> ScriptContext -> Bool
-mkPolicy NFTMintingParameters {..} () ctx = traceIfFalse "UTxO not consumed"   hasUTxO           &&
+mkPolicy :: NFTMintingParameters -> BuiltinData -> ScriptContext -> Bool
+mkPolicy NFTMintingParameters {..} _ ctx = 
+                          traceError "Can't get tx info" info &&
+                          traceError "Can't construct a utxoRef" utxoRef &&
+                          traceIfFalse "UTxO not consumed"   hasUTxO           &&
                           traceIfFalse "wrong amount minted" checkMintedAmount
   where
     info :: TxInfo
     info = scriptContextTxInfo ctx
+
+    utxoRef :: TxOutRef
+    utxoRef = TxOutRef utxoId utxoIndex
 
     hasUTxO :: Bool
     hasUTxO = any (\i -> txInInfoOutRef i == utxoRef) $ txInfoInputs info
@@ -62,10 +69,10 @@ plutusScript =
   unMintingPolicyScript (policy parameters)
     where 
         parameters = NFTMintingParameters {
-            utxoRef = utxoRef,
+            utxoId = TxId "96667140a738478f579a640a90c76a18d7c4d9d0d3cadb2e7860f82e9ddda584",
+            utxoIndex = 0,
             tokenName = TokenName "OlgaNFT"
             }
-        utxoRef = TxOutRef (TxId "96667140a738478f579a640a90c76a18d7c4d9d0d3cadb2e7860f82e9ddda584") 0
 
 validator :: Validator
 validator = Validator $ plutusScript

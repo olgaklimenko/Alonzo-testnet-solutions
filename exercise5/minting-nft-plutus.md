@@ -16,4 +16,36 @@ To try minting policy for NFT, go to `plutus-scripts/policies/MintingNFTScript.h
 Then run `nft-minting-policy` using this [instruction](https://github.com/olgaklimenko/Alonzo-testnet-solutions/blob/main/build-plutus-script.md).
 Copy the resulting `nft-minting-policy.plutus` to data volume.
 
-Other steps are the same as for the [Plevious minting script](https://github.com/olgaklimenko/Alonzo-testnet-solutions/blob/main/exercise5/minting-tokens-plutus.md), just `redeemer` data needs to be changed.
+Create a policy Id:
+
+```
+cardano-cli transaction policyid --script-file nft-minting-policy.plutus > nft-minting-policy.id
+export NFT_POLICY_ID=$(cat nft-minting-policy.id)
+```
+
+Make a transaction:
+
+**WARNING:** My solution fails on transaction build. Working on fix.
+
+```
+cardano-cli transaction build \
+--alonzo-era \
+--testnet-magic 8 \
+--tx-in 96667140a738478f579a640a90c76a18d7c4d9d0d3cadb2e7860f82e9ddda584#0 \
+--tx-out $PERCY_ADDR+10000000+"1 $NFT_POLICY_ID.OlgaNFT" \
+--change-address $PERCY_ADDR \
+--mint="1 $NFT_POLICY_ID.OlgaNFT" \
+--mint-redeemer-value '{"tokenName":"OlgaNFT","utxoId":"96667140a738478f579a640a90c76a18d7c4d9d0d3cadb2e7860f82e9ddda584","utxoIndex":0}' \
+--mint-script-file nft-minting-policy.plutus \
+--tx-in-collateral 18052dceb8d9d0da37191b5e9d0fba8705f16231f6b9400088f0a7aaffa49307#0 \
+--protocol-params-file protocol.json \
+--out-file mint-nft.raw
+
+cardano-cli transaction sign \
+         --signing-key-file /data/keys/percy.skey \
+         --testnet-magic 8 \
+         --tx-body-file mint-nft.raw \
+         --out-file mint-nft.signed
+
+cardano-cli transaction submit --tx-file  mint-nft.signed --testnet-magic 8
+```
