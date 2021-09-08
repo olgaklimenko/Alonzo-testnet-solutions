@@ -17,6 +17,8 @@ module Cardano.PlutusExample.MintingNFTScript
     , mintingNFTScriptShortBs
     ) where
 
+import           Data.Maybe             as M
+import           Data.Aeson             as A
 import qualified PlutusTx
 import           PlutusTx.Prelude       hiding (Semigroup(..), unless)
 import           Ledger                 hiding (mint, singleton)
@@ -39,8 +41,6 @@ PlutusTx.makeLift ''NFTMintingParameters
 {-# INLINABLE mkPolicy #-}
 mkPolicy :: NFTMintingParameters -> BuiltinData -> ScriptContext -> Bool
 mkPolicy NFTMintingParameters {..} _ ctx = 
-                          traceError "Can't get tx info" info &&
-                          traceError "Can't construct a utxoRef" utxoRef &&
                           traceIfFalse "UTxO not consumed"   hasUTxO           &&
                           traceIfFalse "wrong amount minted" checkMintedAmount
   where
@@ -69,7 +69,7 @@ plutusScript =
   unMintingPolicyScript (policy parameters)
     where 
         parameters = NFTMintingParameters {
-            utxoId = TxId "96667140a738478f579a640a90c76a18d7c4d9d0d3cadb2e7860f82e9ddda584",
+            utxoId = M.fromJust $ A.decode $ "{\"getTxId\" : \"96667140a738478f579a640a90c76a18d7c4d9d0d3cadb2e7860f82e9ddda584\"}",
             utxoIndex = 0,
             tokenName = TokenName "OlgaNFT"
             }
