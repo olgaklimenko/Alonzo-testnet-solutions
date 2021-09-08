@@ -48,7 +48,8 @@ library
   exposed-modules:      Cardano.PlutusExample.MintingScriptPurple
                       , Cardano.PlutusExample.MintingNFTScript
 
-  build-depends:        text
+  build-depends:        aeson
+                      , text
                       , bytestring
                       , cardano-api
                       , flat
